@@ -3,44 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>EG1 Trainer Pro Max+</title>
+<title>EG1 Trainer</title>
 <style>
-body{
-    font-family: Arial;
-    text-align:center;
-    background:#111;
-    color:white;
-}
-button{
-    padding:10px 16px;
-    margin:6px;
-    font-size:15px;
-    border:none;
-    border-radius:8px;
-}
-#scramble{
-    font-size:22px;
-    margin:18px;
-}
-.casebox label{
-    margin:5px;
-}
-.hidden{display:none;}
-table{
-    margin:auto;
-    border-collapse:collapse;
-}
-td,th{
-    border:1px solid white;
-    padding:6px 10px;
-}
-#result{
-    font-size:22px;
-    margin:15px;
-    white-space:pre-line;
-}
-.small{font-size:12px;}
-.percent{color:#4cff4c;}
+body{font-family:Arial;text-align:center;background:#111;color:white}
+button{padding:10px 16px;margin:6px;font-size:15px;border:none;border-radius:8px}
+#scramble{font-size:22px;margin:18px}
+.casebox label{margin:5px}
+.hidden{display:none}
+table{margin:auto;border-collapse:collapse}
+td,th{border:1px solid white;padding:6px 10px}
+#result{font-size:22px;margin:15px;white-space:pre-line}
+.small{font-size:12px}
+.percent{color:#4cff4c}
 </style>
 </head>
 <body>
@@ -48,7 +22,6 @@ td,th{
 <button onclick="showPage(1)">训练</button>
 <button onclick="showPage(2)">统计</button>
 
-<!-- 训练界面 -->
 <div id="page1">
 <h2>EG1 打乱训练器</h2>
 
@@ -76,45 +49,58 @@ td,th{
 <div id="result"></div>
 </div>
 
-<!-- 统计界面 -->
 <div id="page2" class="hidden">
 <h2>Case统计</h2>
 <table>
-<tr>
-<th>Case</th>
-<th>正确</th>
-<th>错误</th>
-<th>正确率</th>
-</tr>
+<tr><th>Case</th><th>正确</th><th>错误</th><th>正确率</th></tr>
 <tbody id="caseStats"></tbody>
 </table>
 
 <h2>公式统计</h2>
 <table>
-<tr>
-<th>Case</th>
-<th>公式</th>
-<th>正确</th>
-<th>错误</th>
-<th>正确率</th>
-</tr>
+<tr><th>Case</th><th>公式</th><th>正确</th><th>错误</th><th>正确率</th></tr>
 <tbody id="algStats"></tbody>
 </table>
 
 <br>
-<button onclick="resetStats()">清空所有统计</button>
+<button onclick="resetStats()">清空统计</button>
 </div>
 
 <script>
 
-// ====== 公式库 ======
-const algs={
-"H":[
+// ===== 原始H公式（只用于做错时显示，不参与打乱）=====
+const H_show_correct=[
 "R' F R2 U' R' F R U R' F'",
 "F' U R U' R2 F2 R U' F",
 "R' F R F' U2 F R U2 R' F",
 "R U R' F' R U R' U' R U R'"
-],
+]
+
+// ===== H四种情况（唯一打乱来源）=====
+const H_cases=[
+{ name:"H1", algs:[
+"F' R' F R F R' F' R2 U R'",
+"R U' R2 F R F' R' F' R F",
+"F R U' R' F' R U R2 F' R"
+]},
+{ name:"H2", algs:[
+"R U' R' U' R U' R2 F2 R U R U R'",
+"F U' R' F R2 U2 R' U F'"
+]},
+{ name:"H3", algs:[
+"R' U' R' F2 U F' R F'",
+"R U' R' F U2 F' R' F2 R F'"
+]},
+{ name:"H4", algs:[
+"F2 U' R U R2 F' R U' F",
+"R' F R F' R' F R U' R' F R F'",
+"F' R' F R U2 R U R' U' R U R'",
+"F2 U R' F' R2 U R' U F'"
+]}
+]
+
+// ===== 其它case =====
+const algs={
 "Pi":[
 "F2 R U R' U2 R U R' U' F",
 "R' F R2 U' R2 F R",
@@ -165,15 +151,19 @@ const algs={
 ]
 }
 
-// ===== 数据 =====
+// ===== 统计 =====
 let statsCase={},statsAlg={}
 function initStats(){
+statsCase["H"]={correct:0,wrong:0}
+for(let h of H_cases)
+h.algs.forEach(a=>statsAlg[a]={case:"H",correct:0,wrong:0})
+
 for(let c in algs){
 statsCase[c]={correct:0,wrong:0}
 algs[c].forEach(a=>statsAlg[a]={case:c,correct:0,wrong:0})
-}}
+}
+}
 
-// ===== 本地存储 =====
 function saveStats(){
 localStorage.setItem("eg1_case",JSON.stringify(statsCase))
 localStorage.setItem("eg1_alg",JSON.stringify(statsAlg))
@@ -186,10 +176,10 @@ else initStats()
 }
 function resetStats(){localStorage.clear();initStats();updateStats()}
 
-// ===== 当前 =====
 let currentAlg="",currentCase="",currentScramble=""
+let lastHCase=""
+let lastAlg=""
 
-// ===== 工具 =====
 function invertAlg(alg){
 return alg.split(" ").reverse().map(m=>{
 if(m.includes("'"))return m.replace("'","")
@@ -208,47 +198,65 @@ function getSelectedCases(){
 return Array.from(document.querySelectorAll("input:checked")).map(b=>b.value)
 }
 
-// ===== 复制 =====
 function copyScramble(){
 navigator.clipboard.writeText(currentScramble)
 document.getElementById("result").innerText="已复制"
 }
 
-// ===== 生成 =====
 function nextScramble(){
 let pool=[]
 getSelectedCases().forEach(c=>{
-algs[c].forEach(a=>pool.push({case:c,alg:a}))
+
+if(c==="H"){
+let casePool=H_cases.filter(h=>h.name!==lastHCase)
+let chosenCase=casePool[Math.floor(Math.random()*casePool.length)]
+let algPool=chosenCase.algs.filter(a=>a!==lastAlg)
+let alg=algPool[Math.floor(Math.random()*algPool.length)]
+
+lastHCase=chosenCase.name
+pool.push({case:"H",alg:alg})
+}
+else{
+algs[c].forEach(a=>{
+if(a!==lastAlg) pool.push({case:c,alg:a})
 })
+}
+})
+
 let r=pool[Math.floor(Math.random()*pool.length)]
 currentAlg=r.alg
 currentCase=r.case
 currentScramble=invertAlg(r.alg)
+lastAlg=currentAlg
 
 document.getElementById("shape").innerText="形状: "+r.case
 document.getElementById("scramble").innerText=currentScramble
 document.getElementById("result").innerText=""
 }
 
-// ===== 判定 =====
 function correct(){
 statsCase[currentCase].correct++
 statsAlg[currentAlg].correct++
 saveStats()
 document.getElementById("result").innerText="蒸蚌"
 updateStats()
-// 2.5秒后自动切换
 setTimeout(nextScramble,2500)
 }
+
 function wrong(){
 statsCase[currentCase].wrong++
 statsAlg[currentAlg].wrong++
 saveStats()
-document.getElementById("result").innerText="正确公式：\n"+currentAlg+"\n菜就多练"
+
+let showAlg=currentAlg
+if(currentCase==="H"){
+showAlg=H_show_correct[Math.floor(Math.random()*H_show_correct.length)]
+}
+
+document.getElementById("result").innerText="正确公式：\n"+showAlg+"\n菜就多练"
 updateStats()
 }
 
-// ===== 更新表 =====
 function updateStats(){
 let caseHTML=""
 for(let c in statsCase){
@@ -281,7 +289,6 @@ document.getElementById("page1").classList.toggle("hidden",n!=1)
 document.getElementById("page2").classList.toggle("hidden",n!=2)
 }
 
-// ===== 启动 =====
 loadStats()
 updateStats()
 nextScramble()
@@ -289,6 +296,7 @@ nextScramble()
 </script>
 </body>
 </html>
+
 
 
 

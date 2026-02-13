@@ -1,154 +1,284 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="utf-8">
-<title>EG1训练器</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EG1 Trainer Pro++</title>
 <style>
-body{font-family:Arial;text-align:center;margin:20px;}
-button{padding:10px 15px;margin:5px;font-size:16px;}
-#scramble{font-size:22px;font-weight:bold;margin:15px;}
-#result{font-size:24px;margin:10px;height:30px;}
-table{margin:auto;border-collapse:collapse;}
-td,th{border:1px solid #ccc;padding:6px 10px;}
+body{
+    font-family: Arial;
+    text-align:center;
+    background:#111;
+    color:white;
+}
+button{
+    padding:10px 16px;
+    margin:6px;
+    font-size:15px;
+    border:none;
+    border-radius:8px;
+}
+#scramble{
+    font-size:20px;
+    margin:18px;
+}
+.casebox label{
+    margin:5px;
+}
+.hidden{display:none;}
+table{
+    margin:auto;
+    border-collapse:collapse;
+}
+td,th{
+    border:1px solid white;
+    padding:6px 10px;
+}
+#result{
+    font-size:22px;
+    margin:15px;
+    white-space:pre-line;
+}
+.small{
+    font-size:12px;
+}
 </style>
 </head>
 <body>
 
-<h2>EG1训练器</h2>
+<button onclick="showPage(1)">训练</button>
+<button onclick="showPage(2)">统计</button>
 
-<button onclick="showPage(1)">训练界面</button>
-<button onclick="showPage(2)">统计界面</button>
-
+<!-- 训练界面 -->
 <div id="page1">
+<h2>EG1 打乱训练器</h2>
 
-<div>
-<label><input type="checkbox" checked onchange="toggleCase('H',this)">H</label>
-<label><input type="checkbox" checked onchange="toggleCase('Pi',this)">Pi</label>
-<label><input type="checkbox" checked onchange="toggleCase('T',this)">T</label>
-<label><input type="checkbox" checked onchange="toggleCase('L',this)">L</label>
-<label><input type="checkbox" checked onchange="toggleCase('U',this)">U</label>
-<label><input type="checkbox" checked onchange="toggleCase('S',this)">S</label>
-<label><input type="checkbox" checked onchange="toggleCase('AS',this)">AS</label>
+<div class="casebox">
+<label><input type="checkbox" checked value="H">H</label>
+<label><input type="checkbox" checked value="Pi">Pi</label>
+<label><input type="checkbox" checked value="T">T</label>
+<label><input type="checkbox" checked value="L">L</label>
+<label><input type="checkbox" checked value="U">U</label>
+<label><input type="checkbox" checked value="S">S</label>
+<label><input type="checkbox" checked value="AS">AS</label>
 </div>
 
-<div id="scramble">点击下一条开始</div>
-<div id="result"></div>
+<div id="shape"></div>
+<div id="scramble"></div>
 
-<button onclick="prevScramble()">上一条</button>
 <button onclick="nextScramble()">下一条</button>
-<br><br>
-<button onclick="markCorrect()">做对了</button>
-<button onclick="markWrong()">做错了</button>
 
+<br><br>
+
+<button onclick="correct()">做对了</button>
+<button onclick="wrong()">做错了</button>
+
+<div id="result"></div>
 </div>
 
-<div id="page2" style="display:none">
-<h3>统计</h3>
-<table id="statsTable">
-<tr><th>Case</th><th>公式</th><th>对</th><th>错</th></tr>
+<!-- 统计界面 -->
+<div id="page2" class="hidden">
+<h2>Case统计</h2>
+<table>
+<tr><th>Case</th><th>正确</th><th>错误</th></tr>
+<tbody id="caseStats"></tbody>
 </table>
+
+<h2>公式统计</h2>
+<table>
+<tr><th>Case</th><th>公式</th><th>正确</th><th>错误</th></tr>
+<tbody id="algStats"></tbody>
+</table>
+
+<br>
+<button onclick="resetStats()">清空所有统计</button>
 </div>
 
 <script>
 
-const cases={
-H:["R' F R2 U' R' F R U R' F'","F' U R U' R2 F2 R U' F","R' F R F' U2 F R U2 R' F","R U R' F' R U R' U' R U R'"],
-Pi:["F2 R U R' U2 R U R' U' F","R' F R2 U' R2 F R","F R' F U' F2 R U R","R U' R' U R U' R' F R U' R'","R U R' U R U' R2' F' R F R' F' R","L' U' L U' L' U L2 F L' F' L F L'"],
-T:["F L F' L2 U' L U L' U' L","F' R' F R2 U R' U' R U R'","R U' R2 F R U R U2 R'","R U' R' F' U' F R' F' R F","R U R2 F' R F R' F' R","R U' R' U2 F R U2 R' F"],
-L:["R U' R' U R U' R2 F' R F","L' U L U' L' U L2 F L' F'","R' U R2 U' R2 U' F R2 U' R'","R U2 R' F R U' R2 F' R","R U R' F' R U R' U' F R' F' R","L' U' L F L' U' L U F' L F L'"],
-U:["R U' R2 F R2 U R' U' R U' R'","R U' R' U R U' R' F R U2 R' F R' F' R","R U' R2 F2 R F' U R U R'","R' F R F' R' F R2 U' R'","R U' R' U R U' R' U R' F' R F","L' U L U' L' U L U' L F L' F'"],
-S:["R U R' U F R U' R2 F' R","F R' F' R F R U' R' U R' F' R","F R' F' R U R' F' R2 U R'","F' R' F R2 U R' U' F R' F' R","R U2 R' U R' F' R F R' F R","R' F R2 U' R' U R U' R' F"],
-AS:["R' F R2 U R' F' U' R U' R'","R' F R U' R U R' F' R' F R F'","F' R U R' U' R U R2 F' R","R' F R F' U R U' R2 F' R F","R' F2 R U' R U R' F' R U' R'","R U' R2 F R U' R' F R F'"]
-};
+// ====== 公式库 ======
+const algs = {
+"H":[
+"R' F R2 U' R' F R U R' F'",
+"F' U R U' R2 F2 R U' F",
+"R' F R F' U2 F R U2 R' F",
+"R U R' F' R U R' U' R U R'"
+],
+"Pi":[
+"F2 R U R' U2 R U R' U' F",
+"R' F R2 U' R2 F R",
+"F R' F U' F2 R U R",
+"R U' R' U R U' R' F R U' R'",
+"R U R' U R U' R2 F' R F R' F' R",
+"L' U' L U' L' U L2 F L' F' L F L'"
+],
+"T":[
+"F L F' L2 U' L U L' U' L",
+"F' R' F R2 U R' U' R U R'",
+"R U' R2 F R U R U2 R'",
+"R U' R' F' U' F R' F' R F",
+"R U R2 F' R F R' F' R",
+"R U' R' U2 F R U2 R' F"
+],
+"L":[
+"R U' R' U R U' R2 F' R F",
+"L' U L U' L' U L2 F L' F'",
+"R' U R2 U' R2 U' F R2 U' R'",
+"R U2 R' F R U' R2 F' R",
+"R U R' F' R U R' U' F R' F' R",
+"L' U' L F L' U' L U F' L F L'"
+],
+"U":[
+"R U' R2 F R2 U R' U' R U' R'",
+"R U' R' U R U' R' F R U2 R' F R' F' R",
+"R U' R2 F2 R F' U R U R'",
+"R' F R F' R' F R2 U' R'",
+"R U' R' U R U' R' U R' F' R F",
+"L' U L U' L' U L U' L F L' F'"
+],
+"S":[
+"R U R' U F R U' R2 F' R",
+"F R' F' R F R U' R' U R' F' R",
+"F R' F' R U R' F' R2 U R'",
+"F' R' F R2 U R' U' F R' F' R",
+"R U2 R' U R' F' R F R' F R",
+"R' F R2 U' R' U R U' R' F"
+],
+"AS":[
+"R' F R2 U R' F' U' R U' R'",
+"R' F R U' R U R' F' R' F R F'",
+"F' R U R' U' R U R2 F' R",
+"R' F R F' U R U' R2 F' R F",
+"R' F2 R U' R U R' F' R U' R'",
+"R U' R2 F R U' R' F R F'"
+]
+}
 
-let enabledCases=["H","Pi","T","L","U","S","AS"];
-let history=[];
-let index=-1;
-let stats=JSON.parse(localStorage.getItem("eg1stats")||"{}");
-let lock=false;
+// ===== 数据结构 =====
+let statsCase={}
+let statsAlg={}
 
+// 初始化
+function initStats(){
+    for(let c in algs){
+        statsCase[c]={correct:0,wrong:0}
+        algs[c].forEach(a=>{
+            statsAlg[a]={case:c,correct:0,wrong:0}
+        })
+    }
+}
+
+// ===== 本地存储 =====
 function saveStats(){
-localStorage.setItem("eg1stats",JSON.stringify(stats));
+    localStorage.setItem("eg1_case",JSON.stringify(statsCase))
+    localStorage.setItem("eg1_alg",JSON.stringify(statsAlg))
 }
 
-function toggleCase(name,box){
-if(box.checked) enabledCases.push(name);
-else enabledCases=enabledCases.filter(x=>x!=name);
+function loadStats(){
+    let c=localStorage.getItem("eg1_case")
+    let a=localStorage.getItem("eg1_alg")
+    if(c && a){
+        statsCase=JSON.parse(c)
+        statsAlg=JSON.parse(a)
+    }else{
+        initStats()
+    }
 }
 
-function getRandom(){
-let pool=[];
-enabledCases.forEach(c=>{
-cases[c].forEach(f=>{
-pool.push({case:c,formula:f});
-});
-});
-return pool[Math.floor(Math.random()*pool.length)];
+function resetStats(){
+    localStorage.clear()
+    initStats()
+    updateStats()
 }
 
+// ===== 当前状态 =====
+let currentAlg=""
+let currentCase=""
+
+// ===== 工具 =====
+function invertAlg(alg){
+    return alg.split(" ").reverse().map(m=>{
+        if(m.includes("'")) return m.replace("'","");
+        if(m.includes("2")) return m;
+        return m+"'"
+    }).join(" ")
+}
+
+function getSelectedCases(){
+    return Array.from(document.querySelectorAll("input:checked")).map(b=>b.value)
+}
+
+// ===== 生成 =====
 function nextScramble(){
-let item=getRandom();
-history.push(item);
-index++;
-document.getElementById("scramble").innerText=item.case+"："+item.formula;
-document.getElementById("result").innerText="";
+    let selected=getSelectedCases()
+    let pool=[]
+    selected.forEach(c=>{
+        algs[c].forEach(a=>pool.push({case:c,alg:a}))
+    })
+    let r=pool[Math.floor(Math.random()*pool.length)]
+    currentAlg=r.alg
+    currentCase=r.case
+
+    document.getElementById("shape").innerText="形状: "+r.case
+    document.getElementById("scramble").innerText=invertAlg(r.alg)
+    document.getElementById("result").innerText=""
 }
 
-function prevScramble(){
-if(index>0){
-index--;
-let item=history[index];
-document.getElementById("scramble").innerText=item.case+"："+item.formula;
-}
-}
-
-function markCorrect(){
-if(index<0||lock)return;
-lock=true;
-
-let f=history[index].formula;
-if(!stats[f])stats[f]={c:0,w:0,case:history[index].case};
-stats[f].c++;
-saveStats();
-
-document.getElementById("result").innerText="蒸蚌";
-
-setTimeout(()=>{
-nextScramble();
-lock=false;
-},2000);
+// ===== 判定 =====
+function correct(){
+    statsCase[currentCase].correct++
+    statsAlg[currentAlg].correct++
+    saveStats()
+    document.getElementById("result").innerText="蒸蚌"
+    updateStats()
 }
 
-function markWrong(){
-if(index<0)return;
-
-let f=history[index].formula;
-if(!stats[f])stats[f]={c:0,w:0,case:history[index].case};
-stats[f].w++;
-saveStats();
-
-document.getElementById("result").innerText="正确公式："+f+"   菜就多练";
+function wrong(){
+    statsCase[currentCase].wrong++
+    statsAlg[currentAlg].wrong++
+    saveStats()
+    document.getElementById("result").innerText=
+    "正确公式：\n"+currentAlg+"\n菜就多练"
+    updateStats()
 }
 
-function showPage(p){
-document.getElementById("page1").style.display=p==1?"block":"none";
-document.getElementById("page2").style.display=p==2?"block":"none";
-if(p==2)renderStats();
+// ===== 更新统计显示 =====
+function updateStats(){
+    let caseHTML=""
+    for(let c in statsCase){
+        caseHTML+=`<tr>
+        <td>${c}</td>
+        <td>${statsCase[c].correct}</td>
+        <td>${statsCase[c].wrong}</td>
+        </tr>`
+    }
+    document.getElementById("caseStats").innerHTML=caseHTML
+
+    let algHTML=""
+    for(let a in statsAlg){
+        algHTML+=`<tr>
+        <td>${statsAlg[a].case}</td>
+        <td class="small">${a}</td>
+        <td>${statsAlg[a].correct}</td>
+        <td>${statsAlg[a].wrong}</td>
+        </tr>`
+    }
+    document.getElementById("algStats").innerHTML=algHTML
 }
 
-function renderStats(){
-let t=document.getElementById("statsTable");
-t.innerHTML="<tr><th>Case</th><th>公式</th><th>对</th><th>错</th></tr>";
-for(let f in stats){
-let r=stats[f];
-t.innerHTML+=`<tr><td>${r.case}</td><td>${f}</td><td>${r.c}</td><td>${r.w}</td></tr>`;
+function showPage(n){
+    document.getElementById("page1").classList.toggle("hidden",n!=1)
+    document.getElementById("page2").classList.toggle("hidden",n!=2)
 }
-}
+
+// ===== 启动 =====
+loadStats()
+updateStats()
+nextScramble()
+
 </script>
 </body>
 </html>
 
-</script>
-</body>
-</html>
+
 

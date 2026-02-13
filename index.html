@@ -1,301 +1,258 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>EG1 Trainer</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-body{font-family:Arial;text-align:center;background:#111;color:white}
-button{padding:10px 16px;margin:6px;font-size:15px;border:none;border-radius:8px}
-#scramble{font-size:22px;margin:18px}
-.casebox label{margin:5px}
-.hidden{display:none}
-table{margin:auto;border-collapse:collapse}
-td,th{border:1px solid white;padding:6px 10px}
-#result{font-size:22px;margin:15px;white-space:pre-line}
-.small{font-size:12px}
-.percent{color:#4cff4c}
+body {
+  font-family: system-ui, sans-serif;
+  margin: 0;
+  padding: 12px;
+  background: #f7f7f7;
+}
+button {
+  padding: 8px 14px;
+  margin: 4px;
+  font-size: 16px;
+}
+.case-box {
+  margin: 6px 0;
+}
+.scramble {
+  font-size: 18px;
+  margin: 12px 0;
+  word-break: break-word;
+}
+.msg {
+  font-size: 20px;
+  margin: 10px 0;
+  font-weight: bold;
+}
+.hidden {
+  display: none;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 16px;
+}
+td, th {
+  border: 1px solid #ccc;
+  padding: 4px;
+  font-size: 12px;
+}
 </style>
 </head>
 <body>
 
-<button onclick="showPage(1)">训练</button>
-<button onclick="showPage(2)">统计</button>
+<div>
+  <button onclick="showPage(1)">打乱</button>
+  <button onclick="showPage(2)">统计</button>
+</div>
 
+<!-- 页面1 -->
 <div id="page1">
-<h2>EG1 打乱训练器</h2>
+  <h3>EG1 打乱生成</h3>
 
-<div class="casebox">
-<label><input type="checkbox" checked value="H">H</label>
-<label><input type="checkbox" checked value="Pi">Pi</label>
-<label><input type="checkbox" checked value="T">T</label>
-<label><input type="checkbox" checked value="L">L</label>
-<label><input type="checkbox" checked value="U">U</label>
-<label><input type="checkbox" checked value="S">S</label>
-<label><input type="checkbox" checked value="AS">AS</label>
+  <div>
+    <strong>选择 Case：</strong><br>
+    <span id="caseSelect"></span>
+  </div>
+
+  <div class="scramble" id="scramble"></div>
+  <div class="msg" id="msg"></div>
+
+  <button onclick="prevScramble()">上一条</button>
+  <button onclick="nextScramble()">下一条</button><br>
+  <button onclick="copyScramble()">复制打乱</button><br><br>
+
+  <button onclick="correct()">做对了</button>
+  <button onclick="wrong()">做错了</button>
 </div>
 
-<div id="shape"></div>
-<div id="scramble"></div>
-
-<button onclick="copyScramble()">复制打乱</button>
-<button onclick="nextScramble()">下一条</button>
-
-<br><br>
-
-<button onclick="correct()">做对了</button>
-<button onclick="wrong()">做错了</button>
-
-<div id="result"></div>
-</div>
-
+<!-- 页面2 -->
 <div id="page2" class="hidden">
-<h2>Case统计</h2>
-<table>
-<tr><th>Case</th><th>正确</th><th>错误</th><th>正确率</th></tr>
-<tbody id="caseStats"></tbody>
-</table>
-
-<h2>公式统计</h2>
-<table>
-<tr><th>Case</th><th>公式</th><th>正确</th><th>错误</th><th>正确率</th></tr>
-<tbody id="algStats"></tbody>
-</table>
-
-<br>
-<button onclick="resetStats()">清空统计</button>
+  <h3>统计</h3>
+  <div id="stats"></div>
 </div>
 
 <script>
+/* ========= 数据 ========= */
 
-// ===== 原始H公式（只用于做错时显示，不参与打乱）=====
-const H_show_correct=[
-"R' F R2 U' R' F R U R' F'",
-"F' U R U' R2 F2 R U' F",
-"R' F R F' U2 F R U2 R' F",
-"R U R' F' R U R' U' R U R'"
-]
+const DATA = {
+  H: [
+    ["F' R' F R F R' F' R2 U R'", "R U' R2 F R F' R' F' R F", "R' F R2 U' R' F R U R' F'", "F R U' R' F' R U R2 F' R"],
+    ["F' U R U' R2 F2 R U' F", "R U' R' U' R U' R2 F2 R U R U R'", "F U' R' F R2 U2 R' U F'"],
+    ["R' F R F' U2 F R U2 R' F", "R' U' R' F2 U F' R F'", "R U' R' F U2 F' R' F2 R F'"],
+    ["R U R' F' R U R' U' R U R'", "F2 U' R U R2 F' R U' F", "R' F R F' R' F R U' R' F R F'", "F' R' F R U2 R U R' U' R U R'", "F2 U R' F' R2 U R' U F'"]
+  ],
+  Pi: [
+    ["F U' R' F R U' F2 R U R'", "R2 B2 R' U R' U' R U2 R U' R2"],
+    ["R U R2 F' R2 U R'", "R U' R2 F R2 U' R"],
+    ["F' R U2 R' F' U2 F R' F' R"],
+    ["R' F R U' R' F R F' R' F R", "F' R U R' U' R U R' F' R U R'", "F R' F' R U R' F' R F R' F' R"],
+    ["F R U' R' U' F' R U R2 F' R", "F U' R U2 R' F' R U R' F'", "F' R' F R F' R' F2 R U' F"],
+    ["R' F' R U' R' F R2 U R' F' R U R'", "F R U' R' F R U2 R' U F'", "F' U R' F2 R F R' F' R F", "F' R' F R U F R' F' R2 U R'"]
+  ],
+  T: [
+    ["F R U' R2 F' R U R' F' R", "R U' R2 F R2 U R' U2 R' F R F'", "R U2 R' U' R' F' R F R' F' R"],
+    ["R U' R' U2 R U2 R' F R U' R'", "R U R' F' U2 R U R' U' R U R'", "R' F2 R U R U R' F' R U R'"],
+    ["R U2 R' U' R' F' R2 U R'", "R' F R2 U' R' U' R' F2 R", "R' F2 R U R U R2 F' R"],
+    ["R' F R F' U R U' R' U' R' F' R F"],
+    ["R U2 R2 F R2 U' R' F' R U R'", "R' F' R2 U R' F' R U R'", "R' F2 R2 U' R2 F R F R' F' R"],
+    ["F' R U2 R' F' U2 R U R'", "R' F R U2 F' R' F2 R F'", "F R' F2 R F U2 R' F' R"]
+  ],
+  L: [
+    ["R U R' F' R U2 R' U2 R U R'", "R U' R' F R U' R' U' R' F2 R"],
+    ["F' R' F R F R' F' R F R' F' R", "R' F R F' R' F R U R U2 R'", "F R' F' R U2 R U' R2 F' R2 U R'"],
+    ["R U R2 F' U R2 U R2 U' R"],
+    ["R' F R2 U R' F' R U2 R'", "R' F2 R F' R' F R2 U R'", "R U' R2 F' R F R' F2 R"],
+    ["R U R' F' R U R' U' F R' F' R", "F' R' F R U' R U R' U' R U R'"],
+    ["R' F' R F U' R' F' R U R' F' R", "F R U' R' U R' F' R U R' F' R"]
+  ],
+  U: [
+    ["R U R' U R U' R2 F' R2 U R'", "R U R2 F' R U' R U' R' U R U R'", "R U' R' U' R U R' U R' F R2 U' R'"],
+    ["R U R' F' U' R U R' U' F R' F' R", "F' R' F R U R U R' U' F R' F' R"],
+    ["R U' R' U' F R' F2 R2 U R'", "F' U2 R U2 R' U2 F"],
+    ["R U' R' F R U' R2 F R"],
+    ["R' F R F' U R U' R' F R U' R'", "R U' R' U R U' R' U' F R U' R'"],
+    ["R U' R' F U' R' F R F' R' F R", "R' F R U' R' F R U F' R' F R"]
+  ],
+  S: [
+    ["R U' R2 F' R F U R' F R"],
+    ["R U R' F2 U F R U R'", "F' R' F R U' R U R' U' F R' F' R", "R' F' R F R' U2 R U' R2 F R2"],
+    ["R' F R U2 R U' R2 F2 R F'"],
+    ["F' U R U' R' U F R U R'", "R U' R' F U' R' F R2 U R' F'", "R' F' R U2 R U R' F' R U' R'"],
+    ["R U R' F R U' R' U R' F2 R", "R U' R' U R U' R' U F R U' R'", "R U' R' U R U' R' U' R' F' R F"],
+    ["F' R' F R2 U2 R U2 R U R'"]
+  ],
+  AS: [
+    ["R' F' R U' F' R' F R2 U R'"],
+    ["R U' R' F' U' F2 R U' R'", "F R U' R' U R' F' R U F' R U R'", "F' U' F2 R' F2 R2 U R'"],
+    ["R U' R' U2 R U2 R2 F' R F"],
+    ["R U' R' F' U' R U R' U' F", "F R U' R2 F' R U F' R U R'", "R U R' F R U' R' U2 R' F R"],
+    ["F' R' F R U R U R' U' R U R'", "R U F' R U R2 U' R U R'", "R U R' U2 R' F' R F R' F R"],
+    ["R U R' F' U' R U R' U' R U R'"]
+  ]
+};
 
-// ===== H四种情况（唯一打乱来源）=====
-const H_cases=[
-{ name:"H1", algs:[
-"F' R' F R F R' F' R2 U R'",
-"R U' R2 F R F' R' F' R F",
-"F R U' R' F' R U R2 F' R"
-]},
-{ name:"H2", algs:[
-"R U' R' U' R U' R2 F2 R U R U R'",
-"F U' R' F R2 U2 R' U F'"
-]},
-{ name:"H3", algs:[
-"R' U' R' F2 U F' R F'",
-"R U' R' F U2 F' R' F2 R F'"
-]},
-{ name:"H4", algs:[
-"F2 U' R U R2 F' R U' F",
-"R' F R F' R' F R U' R' F R F'",
-"F' R' F R U2 R U R' U' R U R'",
-"F2 U R' F' R2 U R' U F'"
-]}
-]
+/* ========= 工具 ========= */
 
-// ===== 其它case =====
-const algs={
-"Pi":[
-"F2 R U R' U2 R U R' U' F",
-"R' F R2 U' R2 F R",
-"F R' F U' F2 R U R",
-"R U' R' U R U' R' F R U' R'",
-"R U R' U R U' R2 F' R F R' F' R",
-"L' U' L U' L' U L2 F L' F' L F L'"
-],
-"T":[
-"F L F' L2 U' L U L' U' L",
-"F' R' F R2 U R' U' R U R'",
-"R U' R2 F R U R U2 R'",
-"R U' R' F' U' F R' F' R F",
-"R U R2 F' R F R' F' R",
-"R U' R' U2 F R U2 R' F"
-],
-"L":[
-"R U' R' U R U' R2 F' R F",
-"L' U L U' L' U L2 F L' F'",
-"R' U R2 U' R2 U' F R2 U' R'",
-"R U2 R' F R U' R2 F' R",
-"R U R' F' R U R' U' F R' F' R",
-"L' U' L F L' U' L U F' L F L'"
-],
-"U":[
-"R U' R2 F R2 U R' U' R U' R'",
-"R U' R' U R U' R' F R U2 R' F R' F' R",
-"R U' R2 F2 R F' U R U R'",
-"R' F R F' R' F R2 U' R'",
-"R U' R' U R U' R' U R' F' R F",
-"L' U L U' L' U L U' L F L' F'"
-],
-"S":[
-"R U R' U F R U' R2 F' R",
-"F R' F' R F R U' R' U R' F' R",
-"F R' F' R U R' F' R2 U R'",
-"F' R' F R2 U R' U' F R' F' R",
-"R U2 R' U R' F' R F R' F R",
-"R' F R2 U' R' U R U' R' F"
-],
-"AS":[
-"R' F R2 U R' F' U' R U' R'",
-"R' F R U' R U R' F' R' F R F'",
-"F' R U R' U' R U R2 F' R",
-"R' F R F' U R U' R2 F' R F",
-"R' F2 R U' R U R' F' R U' R'",
-"R U' R2 F R U' R' F R F'"
-]
+const invert = alg =>
+  alg.split(" ").reverse().map(m =>
+    m.includes("'") ? m.replace("'", "") :
+    m.includes("2") ? m :
+    m + "'"
+  ).join(" ");
+
+let history = [];
+let index = -1;
+let lastKey = "";
+
+const stat = JSON.parse(localStorage.getItem("eg1_stat") || "{}");
+
+/* ========= 初始化 ========= */
+
+const cases = Object.keys(DATA);
+const cs = document.getElementById("caseSelect");
+cases.forEach(c => {
+  const cb = document.createElement("input");
+  cb.type = "checkbox";
+  cb.checked = true;
+  cb.value = c;
+  cs.appendChild(cb);
+  cs.append(c + " ");
+});
+
+/* ========= 核心 ========= */
+
+function pick() {
+  const enabled = [...cs.querySelectorAll("input:checked")].map(i => i.value);
+  let c, i, j, key;
+  do {
+    c = enabled[Math.floor(Math.random() * enabled.length)];
+    i = Math.floor(Math.random() * DATA[c].length);
+    j = Math.floor(Math.random() * DATA[c][i].length);
+    key = c + "-" + i;
+  } while (key === lastKey);
+  lastKey = key;
+  return { c, i, j };
 }
 
-// ===== 统计 =====
-let statsCase={},statsAlg={}
-function initStats(){
-statsCase["H"]={correct:0,wrong:0}
-for(let h of H_cases)
-h.algs.forEach(a=>statsAlg[a]={case:"H",correct:0,wrong:0})
-
-for(let c in algs){
-statsCase[c]={correct:0,wrong:0}
-algs[c].forEach(a=>statsAlg[a]={case:c,correct:0,wrong:0})
-}
+function showScramble(o) {
+  const s = invert(DATA[o.c][o.i][o.j]);
+  document.getElementById("scramble").innerText = s;
+  document.getElementById("msg").innerText = "";
 }
 
-function saveStats(){
-localStorage.setItem("eg1_case",JSON.stringify(statsCase))
-localStorage.setItem("eg1_alg",JSON.stringify(statsAlg))
-}
-function loadStats(){
-let c=localStorage.getItem("eg1_case")
-let a=localStorage.getItem("eg1_alg")
-if(c&&a){statsCase=JSON.parse(c);statsAlg=JSON.parse(a)}
-else initStats()
-}
-function resetStats(){localStorage.clear();initStats();updateStats()}
-
-let currentAlg="",currentCase="",currentScramble=""
-let lastHCase=""
-let lastAlg=""
-
-function invertAlg(alg){
-return alg.split(" ").reverse().map(m=>{
-if(m.includes("'"))return m.replace("'","")
-if(m.includes("2"))return m
-return m+"'"
-}).join(" ")
+function nextScramble() {
+  const o = pick();
+  history = history.slice(0, index + 1);
+  history.push(o);
+  index++;
+  showScramble(o);
 }
 
-function percent(c,w){
-let t=c+w
-if(t==0)return "0%"
-return ((c/t*100).toFixed(0))+"%"
+function prevScramble() {
+  if (index > 0) {
+    index--;
+    showScramble(history[index]);
+  }
 }
 
-function getSelectedCases(){
-return Array.from(document.querySelectorAll("input:checked")).map(b=>b.value)
+function correct() {
+  const o = history[index];
+  const k = o.c + "-" + o.i + "-" + o.j;
+  stat[k] = stat[k] || { c: 0, w: 0 };
+  stat[k].c++;
+  save();
+  document.getElementById("msg").innerText = "蒸蚌";
+  setTimeout(nextScramble, 2500);
 }
 
-function copyScramble(){
-navigator.clipboard.writeText(currentScramble)
-document.getElementById("result").innerText="已复制"
+function wrong() {
+  const o = history[index];
+  const k = o.c + "-" + o.i + "-" + o.j;
+  stat[k] = stat[k] || { c: 0, w: 0 };
+  stat[k].w++;
+  save();
+  document.getElementById("msg").innerText =
+    DATA[o.c][o.i][o.j] + "\n菜就多练";
 }
 
-function nextScramble(){
-let pool=[]
-getSelectedCases().forEach(c=>{
-
-if(c==="H"){
-let casePool=H_cases.filter(h=>h.name!==lastHCase)
-let chosenCase=casePool[Math.floor(Math.random()*casePool.length)]
-let algPool=chosenCase.algs.filter(a=>a!==lastAlg)
-let alg=algPool[Math.floor(Math.random()*algPool.length)]
-
-lastHCase=chosenCase.name
-pool.push({case:"H",alg:alg})
-}
-else{
-algs[c].forEach(a=>{
-if(a!==lastAlg) pool.push({case:c,alg:a})
-})
-}
-})
-
-let r=pool[Math.floor(Math.random()*pool.length)]
-currentAlg=r.alg
-currentCase=r.case
-currentScramble=invertAlg(r.alg)
-lastAlg=currentAlg
-
-document.getElementById("shape").innerText="形状: "+r.case
-document.getElementById("scramble").innerText=currentScramble
-document.getElementById("result").innerText=""
+function copyScramble() {
+  navigator.clipboard.writeText(
+    document.getElementById("scramble").innerText
+  );
 }
 
-function correct(){
-statsCase[currentCase].correct++
-statsAlg[currentAlg].correct++
-saveStats()
-document.getElementById("result").innerText="蒸蚌"
-updateStats()
-setTimeout(nextScramble,2500)
+function save() {
+  localStorage.setItem("eg1_stat", JSON.stringify(stat));
 }
 
-function wrong(){
-statsCase[currentCase].wrong++
-statsAlg[currentAlg].wrong++
-saveStats()
-
-let showAlg=currentAlg
-if(currentCase==="H"){
-showAlg=H_show_correct[Math.floor(Math.random()*H_show_correct.length)]
+function showPage(n) {
+  page1.classList.toggle("hidden", n !== 1);
+  page2.classList.toggle("hidden", n !== 2);
+  if (n === 2) renderStats();
 }
 
-document.getElementById("result").innerText="正确公式：\n"+showAlg+"\n菜就多练"
-updateStats()
+function renderStats() {
+  const box = document.getElementById("stats");
+  box.innerHTML = "";
+  for (const k in stat) {
+    const s = stat[k];
+    const t = s.c + s.w;
+    const r = t ? ((s.c / t) * 100).toFixed(1) : "0";
+    box.innerHTML += `<div>${k}：✔${s.c} ✘${s.w} (${r}%)</div>`;
+  }
 }
 
-function updateStats(){
-let caseHTML=""
-for(let c in statsCase){
-let d=statsCase[c]
-caseHTML+=`<tr>
-<td>${c}</td>
-<td>${d.correct}</td>
-<td>${d.wrong}</td>
-<td class="percent">${percent(d.correct,d.wrong)}</td>
-</tr>`
-}
-document.getElementById("caseStats").innerHTML=caseHTML
-
-let algHTML=""
-for(let a in statsAlg){
-let d=statsAlg[a]
-algHTML+=`<tr>
-<td>${d.case}</td>
-<td class="small">${a}</td>
-<td>${d.correct}</td>
-<td>${d.wrong}</td>
-<td class="percent">${percent(d.correct,d.wrong)}</td>
-</tr>`
-}
-document.getElementById("algStats").innerHTML=algHTML
-}
-
-function showPage(n){
-document.getElementById("page1").classList.toggle("hidden",n!=1)
-document.getElementById("page2").classList.toggle("hidden",n!=2)
-}
-
-loadStats()
-updateStats()
-nextScramble()
-
+nextScramble();
 </script>
 </body>
 </html>
+
 
 
 

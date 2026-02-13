@@ -2,11 +2,10 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>EG1 训练器</title>
+<title>EG1训练器</title>
 <style>
 body{font-family:Arial;text-align:center;margin:20px;}
 button{padding:10px 15px;margin:5px;font-size:16px;}
-.caseBox{margin:10px;}
 #scramble{font-size:22px;font-weight:bold;margin:15px;}
 #result{font-size:24px;margin:10px;height:30px;}
 table{margin:auto;border-collapse:collapse;}
@@ -22,14 +21,14 @@ td,th{border:1px solid #ccc;padding:6px 10px;}
 
 <div id="page1">
 
-<div class="caseBox">
-<label><input type="checkbox" checked onchange="updateCases('H',this)">H</label>
-<label><input type="checkbox" checked onchange="updateCases('Pi',this)">Pi</label>
-<label><input type="checkbox" checked onchange="updateCases('T',this)">T</label>
-<label><input type="checkbox" checked onchange="updateCases('L',this)">L</label>
-<label><input type="checkbox" checked onchange="updateCases('U',this)">U</label>
-<label><input type="checkbox" checked onchange="updateCases('S',this)">S</label>
-<label><input type="checkbox" checked onchange="updateCases('AS',this)">AS</label>
+<div>
+<label><input type="checkbox" checked onchange="toggleCase('H',this)">H</label>
+<label><input type="checkbox" checked onchange="toggleCase('Pi',this)">Pi</label>
+<label><input type="checkbox" checked onchange="toggleCase('T',this)">T</label>
+<label><input type="checkbox" checked onchange="toggleCase('L',this)">L</label>
+<label><input type="checkbox" checked onchange="toggleCase('U',this)">U</label>
+<label><input type="checkbox" checked onchange="toggleCase('S',this)">S</label>
+<label><input type="checkbox" checked onchange="toggleCase('AS',this)">AS</label>
 </div>
 
 <div id="scramble">点击下一条开始</div>
@@ -53,64 +52,16 @@ td,th{border:1px solid #ccc;padding:6px 10px;}
 <script>
 
 const cases={
-H:[
-"R' F R2 U' R' F R U R' F'",
-"F' U R U' R2 F2 R U' F",
-"R' F R F' U2 F R U2 R' F",
-"R U R' F' R U R' U' R U R'"
-],
-Pi:[
-"F2 R U R' U2 R U R' U' F",
-"R' F R2 U' R2 F R",
-"F R' F U' F2 R U R",
-"R U' R' U R U' R' F R U' R'",
-"R U R' U R U' R2' F' R F R' F' R",
-"L' U' L U' L' U L2 F L' F' L F L'"
-],
-T:[
-"F L F' L2 U' L U L' U' L",
-"F' R' F R2 U R' U' R U R'",
-"R U' R2 F R U R U2 R'",
-"R U' R' F' U' F R' F' R F",
-"R U R2 F' R F R' F' R",
-"R U' R' U2 F R U2 R' F"
-],
-L:[
-"R U' R' U R U' R2 F' R F",
-"L' U L U' L' U L2 F L' F'",
-"R' U R2 U' R2 U' F R2 U' R'",
-"R U2 R' F R U' R2 F' R",
-"R U R' F' R U R' U' F R' F' R",
-"L' U' L F L' U' L U F' L F L'"
-],
-U:[
-"R U' R2 F R2 U R' U' R U' R'",
-"R U' R' U R U' R' F R U2 R' F R' F' R",
-"R U' R2 F2 R F' U R U R'",
-"R' F R F' R' F R2 U' R'",
-"R U' R' U R U' R' U R' F' R F",
-"L' U L U' L' U L U' L F L' F'"
-],
-S:[
-"R U R' U F R U' R2 F' R",
-"F R' F' R F R U' R' U R' F' R",
-"F R' F' R U R' F' R2 U R'",
-"F' R' F R2 U R' U' F R' F' R",
-"R U2 R' U R' F' R F R' F R",
-"R' F R2 U' R' U R U' R' F"
-],
-AS:[
-"R' F R2 U R' F' U' R U' R'",
-"R' F R U' R U R' F' R' F R F'",
-"F' R U R' U' R U R2 F' R",
-"R' F R F' U R U' R2 F' R F",
-"R' F2 R U' R U R' F' R U' R'",
-"R U' R2 F R U' R' F R F'"
-]
+H:["R' F R2 U' R' F R U R' F'","F' U R U' R2 F2 R U' F","R' F R F' U2 F R U2 R' F","R U R' F' R U R' U' R U R'"],
+Pi:["F2 R U R' U2 R U R' U' F","R' F R2 U' R2 F R","F R' F U' F2 R U R","R U' R' U R U' R' F R U' R'","R U R' U R U' R2' F' R F R' F' R","L' U' L U' L' U L2 F L' F' L F L'"],
+T:["F L F' L2 U' L U L' U' L","F' R' F R2 U R' U' R U R'","R U' R2 F R U R U2 R'","R U' R' F' U' F R' F' R F","R U R2 F' R F R' F' R","R U' R' U2 F R U2 R' F"],
+L:["R U' R' U R U' R2 F' R F","L' U L U' L' U L2 F L' F'","R' U R2 U' R2 U' F R2 U' R'","R U2 R' F R U' R2 F' R","R U R' F' R U R' U' F R' F' R","L' U' L F L' U' L U F' L F L'"],
+U:["R U' R2 F R2 U R' U' R U' R'","R U' R' U R U' R' F R U2 R' F R' F' R","R U' R2 F2 R F' U R U R'","R' F R F' R' F R2 U' R'","R U' R' U R U' R' U R' F' R F","L' U L U' L' U L U' L F L' F'"],
+S:["R U R' U F R U' R2 F' R","F R' F' R F R U' R' U R' F' R","F R' F' R U R' F' R2 U R'","F' R' F R2 U R' U' F R' F' R","R U2 R' U R' F' R F R' F R","R' F R2 U' R' U R U' R' F"],
+AS:["R' F R2 U R' F' U' R U' R'","R' F R U' R U R' F' R' F R F'","F' R U R' U' R U R2 F' R","R' F R F' U R U' R2 F' R F","R' F2 R U' R U R' F' R U' R'","R U' R2 F R U' R' F R F'"]
 };
 
 let enabledCases=["H","Pi","T","L","U","S","AS"];
-let pool=[];
 let history=[];
 let index=-1;
 let stats=JSON.parse(localStorage.getItem("eg1stats")||"{}");
@@ -120,61 +71,62 @@ function saveStats(){
 localStorage.setItem("eg1stats",JSON.stringify(stats));
 }
 
-function updateCases(name,box){
+function toggleCase(name,box){
 if(box.checked) enabledCases.push(name);
 else enabledCases=enabledCases.filter(x=>x!=name);
 }
 
 function getRandom(){
-pool=[];
+let pool=[];
 enabledCases.forEach(c=>{
 cases[c].forEach(f=>{
 pool.push({case:c,formula:f});
 });
 });
-let r;
-do{
-r=pool[Math.floor(Math.random()*pool.length)];
-}while(history[index] && history[index].formula===r.formula && pool.length>1);
-return r;
+return pool[Math.floor(Math.random()*pool.length)];
 }
 
 function nextScramble(){
 let item=getRandom();
 history.push(item);
 index++;
-show(item);
+document.getElementById("scramble").innerText=item.case+"："+item.formula;
+document.getElementById("result").innerText="";
 }
 
 function prevScramble(){
 if(index>0){
 index--;
-show(history[index]);
-}
-}
-
-function show(item){
+let item=history[index];
 document.getElementById("scramble").innerText=item.case+"："+item.formula;
-document.getElementById("result").innerText="";
+}
 }
 
 function markCorrect(){
 if(index<0||lock)return;
 lock=true;
+
 let f=history[index].formula;
 if(!stats[f])stats[f]={c:0,w:0,case:history[index].case};
 stats[f].c++;
 saveStats();
+
 document.getElementById("result").innerText="蒸蚌";
-setTimeout(()=>{nextScramble();lock=false;},2000);
+
+setTimeout(()=>{
+nextScramble();
+lock=false;
+},2000);
 }
 
 function markWrong(){
 if(index<0)return;
+
 let f=history[index].formula;
 if(!stats[f])stats[f]={c:0,w:0,case:history[index].case};
 stats[f].w++;
 saveStats();
+
 document.getElementById("result").innerText="正确公式："+f+"   菜就多练";
 }
 
@@ -192,7 +144,11 @@ let r=stats[f];
 t.innerHTML+=`<tr><td>${r.case}</td><td>${f}</td><td>${r.c}</td><td>${r.w}</td></tr>`;
 }
 }
+</script>
+</body>
+</html>
 
 </script>
 </body>
 </html>
+

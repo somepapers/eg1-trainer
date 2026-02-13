@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>EG1 Trainer </title>
+<title>EG1 Trainer Pro Max+</title>
 <style>
 body{
     font-family: Arial;
@@ -50,7 +50,7 @@ td,th{
 
 <!-- 训练界面 -->
 <div id="page1">
-<h2>EG1 Training</h2>
+<h2>EG1 打乱训练器</h2>
 
 <div class="casebox">
 <label><input type="checkbox" checked value="H">H</label>
@@ -237,6 +237,8 @@ statsAlg[currentAlg].correct++
 saveStats()
 document.getElementById("result").innerText="蒸蚌"
 updateStats()
+// 2.5秒后自动切换
+setTimeout(nextScramble,2500)
 }
 function wrong(){
 statsCase[currentCase].wrong++
@@ -287,6 +289,8 @@ nextScramble()
 </script>
 </body>
 </html>
+
+
 
 
 

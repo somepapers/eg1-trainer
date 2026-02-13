@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>EG1 Trainer Pro++</title>
+<title>EG1 Trainer </title>
 <style>
 body{
     font-family: Arial;
@@ -225,12 +225,15 @@ function nextScramble(){
 }
 
 // ===== 判定 =====
-function correct(){
-    statsCase[currentCase].correct++
-    statsAlg[currentAlg].correct++
-    saveStats()
-    document.getElementById("result").innerText="蒸蚌,发货成功"
-    updateStats()
+function markCorrect() {
+    stats[currentFormula].correct++;
+    saveStats();
+
+    showMessage("蒸蚌");
+
+    setTimeout(() => {
+        nextScramble();
+    }, 2000);
 }
 
 function wrong(){
@@ -279,3 +282,4 @@ nextScramble()
 </script>
 </body>
 </html>
+

@@ -23,7 +23,7 @@ td,th{border:1px solid white;padding:6px 10px}
 <button onclick="showPage(2)">统计</button>
 
 <div id="page1">
-<h2>EG1 打乱训练器</h2>
+<h2>EG1 Training</h2>
 
 <div class="casebox">
 <label><input type="checkbox" checked value="H">H</label>
@@ -68,7 +68,7 @@ td,th{border:1px solid white;padding:6px 10px}
 
 <script>
 
-// ===== 原始H公式（做错时显示）=====
+// ===== 原始标准显示公式 =====
 const H_show_correct=[
 "R' F R2 U' R' F R U R' F'",
 "F' U R U' R2 F2 R U' F",
@@ -76,76 +76,52 @@ const H_show_correct=[
 "R U R' F' R U R' U' R U R'"
 ]
 
-// ===== 新H四种情况（用于生成打乱）=====
-const H_cases=[
-{ name:"H1", algs:[
-"F' R' F R F R' F' R2 U R'",
-"R U' R2 F R F' R' F' R F",
-"R' F R2 U' R' F R U R' F'",
-"F R U' R' F' R U R2 F' R"
-]},
-{ name:"H2", algs:[
-"F' U R U' R2 F2 R U' F",
-"R U' R' U' R U' R2 F2 R U R U R'",
-"F U' R' F R2 U2 R' U F'"
-]},
-{ name:"H3", algs:[
-"R' F R F' U2 F R U2 R' F",
-"R' U' R' F2 U F' R F'",
-"R U' R' F U2 F' R' F2 R F'"
-]},
-{ name:"H4", algs:[
-"R U R' F' R U R' U' R U R'",
-"F2 U' R U R2 F' R U' F",
-"R' F R F' R' F R U' R' F R F'",
-"F' R' F R U2 R U R' U' R U R'",
-"F2 U R' F' R2 U R' U F'"
-]}
-]
-
-// ===== 其它case公式 =====
-const algs={
-"Pi":[
+const Pi_show_correct=[
 "F2 R U R' U2 R U R' U' F",
 "R' F R2 U' R2 F R",
 "F R' F U' F2 R U R",
 "R U' R' U R U' R' F R U' R'",
 "R U R' U R U' R2 F' R F R' F' R",
 "L' U' L U' L' U L2 F L' F' L F L'"
-],
-"T":[
+]
+
+const T_show_correct=[
 "F L F' L2 U' L U L' U' L",
 "F' R' F R2 U R' U' R U R'",
 "R U' R2 F R U R U2 R'",
 "R U' R' F' U' F R' F' R F",
 "R U R2 F' R F R' F' R",
 "R U' R' U2 F R U2 R' F"
-],
-"L":[
+]
+
+const L_show_correct=[
 "R U' R' U R U' R2 F' R F",
 "L' U L U' L' U L2 F L' F'",
 "R' U R2 U' R2 U' F R2 U' R'",
 "R U2 R' F R U' R2 F' R",
 "R U R' F' R U R' U' F R' F' R",
 "L' U' L F L' U' L U F' L F L'"
-],
-"U":[
+]
+
+const U_show_correct=[
 "R U' R2 F R2 U R' U' R U' R'",
 "R U' R' U R U' R' F R U2 R' F R' F' R",
 "R U' R2 F2 R F' U R U R'",
 "R' F R F' R' F R2 U' R'",
 "R U' R' U R U' R' U R' F' R F",
 "L' U L U' L' U L U' L F L' F'"
-],
-"S":[
+]
+
+const S_show_correct=[
 "R U R' U F R U' R2 F' R",
 "F R' F' R F R U' R' U R' F' R",
 "F R' F' R U R' F' R2 U R'",
 "F' R' F R2 U R' U' F R' F' R",
 "R U2 R' U R' F' R F R' F R",
 "R' F R2 U' R' U R U' R' F"
-],
-"AS":[
+]
+
+const AS_show_correct=[
 "R' F R2 U R' F' U' R U' R'",
 "R' F R U' R U R' F' R' F R F'",
 "F' R U R' U' R U R2 F' R",
@@ -153,36 +129,82 @@ const algs={
 "R' F2 R U' R U R' F' R U' R'",
 "R U' R2 F R U' R' F R F'"
 ]
-}
 
-// ===== 统计 =====
+// ===== Case 数据 =====
+const H_cases=[
+{name:"H1",algs:["F' R' F R F R' F' R2 U R'","R U' R2 F R F' R' F' R F","R' F R2 U' R' F R U R' F'","F R U' R' F' R U R2 F' R"]},
+{name:"H2",algs:["F' U R U' R2 F2 R U' F","R U' R' U' R U' R2 F2 R U R U R'","F U' R' F R2 U2 R' U F'"]},
+{name:"H3",algs:["R' F R F' U2 F R U2 R' F","R' U' R' F2 U F' R F'","R U' R' F U2 F' R' F2 R F'"]},
+{name:"H4",algs:["R U R' F' R U R' U' R U R'","F2 U' R U R2 F' R U' F","R' F R F' R' F R U' R' F R F'","F' R' F R U2 R U R' U' R U R'","F2 U R' F' R2 U R' U F'"]}
+]
+
+const Pi_cases=[
+{name:"Pi1",algs:["F U' R' F R U' F2 R U R'","R2 B2 R' U R' U' R U2 R U' R2"]},
+{name:"Pi2",algs:["R U R2 F' R2 U R'","R U' R2 F R2 U' R"]},
+{name:"Pi3",algs:["F' R U2 R' F' U2 F R' F' R"]},
+{name:"Pi4",algs:["R' F R U' R' F R F' R' F R","F' R U R' U' R U R' F' R U R'","F R' F' R U R' F' R F R' F' R"]},
+{name:"Pi5",algs:["F R U' R' U' F' R U R2 F' R","F U' R U2 R' F' R U R' F'","F' R' F R F' R' F2 R U' F"]},
+{name:"Pi6",algs:["R' F' R U' R' F R2 U R' F' R U R'","F R U' R' F R U2 R' U F'","F' U R' F2 R F R' F' R F","F' R' F R U F R' F' R2 U R'"]}
+]
+
+const T_cases=[
+{name:"T1",algs:["F R U' R2 F' R U R' F' R","R U' R2 F R2 U R' U2 R' F R F'","R U2 R' U' R' F' R F R' F' R"]},
+{name:"T2",algs:["R U' R' U2 R U2 R' F R U' R'","R U R' F' U2 R U R' U' R U R'","R' F2 R U R U R' F' R U R'"]},
+{name:"T3",algs:["R U2 R' U' R' F' R2 U R'","R' F R2 U' R' U' R' F2 R","R' F2 R U R U R2 F' R"]},
+{name:"T4",algs:["R' F R F' U R U' R' U' R' F' R F"]},
+{name:"T5",algs:["R U2 R2 F R2 U' R' F' R U R'","R' F' R2 U R' F' R U R'","R' F2 R2 U' R2 F R F R' F' R"]},
+{name:"T6",algs:["F' R U2 R' F' U2 R U R'","R' F R U2 F' R' F2 R F'","F R' F2 R F U2 R' F' R"]}
+]
+
+const L_cases=[
+{name:"L1",algs:["R U' R' U R U' R2 F' R F","R U R' F' R U R' U' F R' F'"]},
+{name:"L2",algs:["R U2 R' F R U' R2 F' R","R' F R2 U' R' U R U' R' F"]},
+{name:"L3",algs:["R' U R2 U' R2 U' F R2 U' R'","F R' F' R U R' F' R2 U R'"]},
+{name:"L4",algs:["L' U L U' L' U L2 F L' F'","L' U' L F L' U' L U F' L F L'"]},
+{name:"L5",algs:["R U' R' U R U' R' U R' F' R F","F' R' F R2 U R' U' F R' F' R"]},
+{name:"L6",algs:["R U R' F R U' R' F R F'","R' F2 R U' R U R' F' R U' R'"]}
+]
+
+const U_cases=[
+{name:"U1",algs:["R U R' U R U' R2 F' R2 U R'","R U R2 F' R U' R U' R' U R U R'","R U' R' U' R U R' U R' F R2 U' R'"]},
+{name:"U2",algs:["R U R' F' U' R U R' U' F R' F' R","F' R' F R U R U R' U' F R' F' R"]},
+{name:"U3",algs:["R U' R' U' F R' F2 R2 U R'","F' U2 R U2 R' U2 F"]},
+{name:"U4",algs:["R U' R' F R U' R2 F R"]},
+{name:"U5",algs:["R' F R F' U R U' R' F R U' R'","R U' R' U R U' R' U' F R U' R'"]},
+{name:"U6",algs:["R U' R' F U' R' F R F' R' F R","R' F R U' R' F R U F' R' F R"]}
+]
+
+const S_cases=[
+{name:"S1",algs:["R U' R2 F' R F U R' F R"]},
+{name:"S2",algs:["R U R' F2 U F R U R'","F' R' F R U' R U R' U' F R' F' R","R' F' R F R' U2 R U' R2 F R2"]},
+{name:"S3",algs:["R' F R U2 R U' R2 F2 R F'"]},
+{name:"S4",algs:["F' U R U' R' U F R U R'","R U' R' F U' R' F R2 U R' F'","R' F' R U2 R U R' F' R U' R'"]},
+{name:"S5",algs:["F' R' F R2 U2 R U2 R U R'"]},
+{name:"S6",algs:["R' F' R U' F' R' F R2 U R'"]}
+]
+
+const AS_cases=[
+{name:"AS1",algs:["R' F' R U' F' R' F R2 U R'"]},
+{name:"AS2",algs:["R U' R' F' U' F2 R U' R'","F R U' R' U R' F' R U F' R U R'","F' U' F2 R' F2 R2 U R'"]},
+{name:"AS3",algs:["R U' R' U2 R U2 R2 F' R F"]},
+{name:"AS4",algs:["R U' R' F' U' R U R' U' F","F R U' R2 F' R U F' R U R'","R U R' F R U' R' U2 R' F R"]},
+{name:"AS5",algs:["F' R' F R U R U R' U' R U R'","R U F' R U R2 U' R U R'","R U R' U2 R' F' R F R' F R"]},
+{name:"AS6",algs:["R U R' F' U' R U R' U' R U R'"]}
+]
+
+// ===== 初始化 =====
 let statsCase={},statsAlg={}
 function initStats(){
-statsCase["H"]={correct:0,wrong:0}
-for(let h of H_cases)
-h.algs.forEach(a=>statsAlg[a]={case:"H",correct:0,wrong:0})
-
-for(let c in algs){
-statsCase[c]={correct:0,wrong:0}
+["H","Pi","T","L","U","S","AS"].forEach(c=>statsCase[c]={correct:0,wrong:0})
+;[...H_cases,...Pi_cases,...T_cases,...L_cases,...U_cases,...S_cases,...AS_cases].forEach(cs=>{
+cs.algs.forEach(a=>statsAlg[a]={case:cs.name.replace(/[0-9]/g,''),correct:0,wrong:0})
+})
+for(let c in algs)
 algs[c].forEach(a=>statsAlg[a]={case:c,correct:0,wrong:0})
 }
-}
 
-function saveStats(){
-localStorage.setItem("eg1_case",JSON.stringify(statsCase))
-localStorage.setItem("eg1_alg",JSON.stringify(statsAlg))
-}
-function loadStats(){
-let c=localStorage.getItem("eg1_case")
-let a=localStorage.getItem("eg1_alg")
-if(c&&a){statsCase=JSON.parse(c);statsAlg=JSON.parse(a)}
-else initStats()
-}
-function resetStats(){localStorage.clear();initStats();updateStats()}
-
+let lastHCase="",lastPiCase="",lastTCase="",lastLCase="",lastUCase="",lastSCase="",lastASCase="",lastAlg=""
 let currentAlg="",currentCase="",currentScramble=""
-let lastHCase=""
-let lastAlg=""
 
 function invertAlg(alg){
 return alg.split(" ").reverse().map(m=>{
@@ -202,30 +224,31 @@ function getSelectedCases(){
 return Array.from(document.querySelectorAll("input:checked")).map(b=>b.value)
 }
 
-function copyScramble(){
-navigator.clipboard.writeText(currentScramble)
-document.getElementById("result").innerText="已复制"
-}
-
 function nextScramble(){
 let pool=[]
 getSelectedCases().forEach(c=>{
-
-if(c==="H"){
-let casePool=H_cases.filter(h=>h.name!==lastHCase)
-let chosenCase=casePool[Math.floor(Math.random()*casePool.length)]
-
-let algPool=chosenCase.algs.filter(a=>a!==lastAlg)
-let alg=algPool[Math.floor(Math.random()*algPool.length)]
-
-lastHCase=chosenCase.name
-pool.push({case:"H",alg:alg})
-}
-else{
-algs[c].forEach(a=>{
-if(a!==lastAlg) pool.push({case:c,alg:a})
-})
-}
+if(c==="H"){let chosen=H_cases[Math.floor(Math.random()*H_cases.length)]
+let alg=chosen.algs[Math.floor(Math.random()*chosen.algs.length)]
+lastHCase=chosen.name;pool.push({case:"H",alg})}
+else if(c==="Pi"){let chosen=Pi_cases[Math.floor(Math.random()*Pi_cases.length)]
+let alg=chosen.algs[Math.floor(Math.random()*chosen.algs.length)]
+lastPiCase=chosen.name;pool.push({case:"Pi",alg})}
+else if(c==="T"){let chosen=T_cases[Math.floor(Math.random()*T_cases.length)]
+let alg=chosen.algs[Math.floor(Math.random()*chosen.algs.length)]
+lastTCase=chosen.name;pool.push({case:"T",alg})}
+else if(c==="L"){let chosen=L_cases[Math.floor(Math.random()*L_cases.length)]
+let alg=chosen.algs[Math.floor(Math.random()*chosen.algs.length)]
+lastLCase=chosen.name;pool.push({case:"L",alg})}
+else if(c==="U"){let chosen=U_cases[Math.floor(Math.random()*U_cases.length)]
+let alg=chosen.algs[Math.floor(Math.random()*chosen.algs.length)]
+lastUCase=chosen.name;pool.push({case:"U",alg})}
+else if(c==="S"){let chosen=S_cases[Math.floor(Math.random()*S_cases.length)]
+let alg=chosen.algs[Math.floor(Math.random()*chosen.algs.length)]
+lastSCase=chosen.name;pool.push({case:"S",alg})}
+else if(c==="AS"){let chosen=AS_cases[Math.floor(Math.random()*AS_cases.length)]
+let alg=chosen.algs[Math.floor(Math.random()*chosen.algs.length)]
+lastASCase=chosen.name;pool.push({case:"AS",alg})}
+else{algs[c].forEach(a=>pool.push({case:c,alg:a}))}
 })
 
 let r=pool[Math.floor(Math.random()*pool.length)]
@@ -255,7 +278,32 @@ saveStats()
 
 let showAlg=currentAlg
 if(currentCase==="H"){
-showAlg=H_show_correct[Math.floor(Math.random()*H_show_correct.length)]
+let index=parseInt(lastHCase.replace("H",""))-1
+showAlg=H_show_correct[index]
+}
+else if(currentCase==="Pi"){
+let index=parseInt(lastPiCase.replace("Pi",""))-1
+showAlg=Pi_show_correct[index]
+}
+else if(currentCase==="T"){
+let index=parseInt(lastTCase.replace("T",""))-1
+showAlg=T_show_correct[index]
+}
+else if(currentCase==="L"){
+let index=parseInt(lastLCase.replace("L",""))-1
+showAlg=L_show_correct[index]
+}
+else if(currentCase==="U"){
+let index=parseInt(lastUCase.replace("U",""))-1
+showAlg=U_show_correct[index]
+}
+else if(currentCase==="S"){
+let index=parseInt(lastSCase.replace("S",""))-1
+showAlg=S_show_correct[index]
+}
+else if(currentCase==="AS"){
+let index=parseInt(lastASCase.replace("AS",""))-1
+showAlg=AS_show_correct[index]
 }
 
 document.getElementById("result").innerText="正确公式：\n"+showAlg+"\n菜就多练"
@@ -266,27 +314,33 @@ function updateStats(){
 let caseHTML=""
 for(let c in statsCase){
 let d=statsCase[c]
-caseHTML+=`<tr>
-<td>${c}</td>
-<td>${d.correct}</td>
-<td>${d.wrong}</td>
-<td class="percent">${percent(d.correct,d.wrong)}</td>
-</tr>`
+caseHTML+=`<tr><td>${c}</td><td>${d.correct}</td><td>${d.wrong}</td><td class="percent">${percent(d.correct,d.wrong)}</td></tr>`
 }
 document.getElementById("caseStats").innerHTML=caseHTML
 
 let algHTML=""
 for(let a in statsAlg){
 let d=statsAlg[a]
-algHTML+=`<tr>
-<td>${d.case}</td>
-<td class="small">${a}</td>
-<td>${d.correct}</td>
-<td>${d.wrong}</td>
-<td class="percent">${percent(d.correct,d.wrong)}</td>
-</tr>`
+algHTML+=`<tr><td>${d.case}</td><td class="small">${a}</td><td>${d.correct}</td><td>${d.wrong}</td><td class="percent">${percent(d.correct,d.wrong)}</td></tr>`
 }
 document.getElementById("algStats").innerHTML=algHTML
+}
+
+function saveStats(){
+localStorage.setItem("eg1_case",JSON.stringify(statsCase))
+localStorage.setItem("eg1_alg",JSON.stringify(statsAlg))
+}
+function loadStats(){
+let c=localStorage.getItem("eg1_case")
+let a=localStorage.getItem("eg1_alg")
+if(c&&a){statsCase=JSON.parse(c);statsAlg=JSON.parse(a)}
+else initStats()
+}
+function resetStats(){localStorage.clear();initStats();updateStats()}
+
+function copyScramble(){
+navigator.clipboard.writeText(currentScramble)
+document.getElementById("result").innerText="已复制"
 }
 
 function showPage(n){
